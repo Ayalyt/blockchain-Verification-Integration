@@ -1,0 +1,14 @@
+{
+  "circom_folder": "/app/assets/circom-218",
+  "circom_folder1": "/app/assets/circom-202",
+  "profraw_folder": "/app/profraw/1",
+  "profraw_folder1": "/app/profraw/2",
+  "coverage_folder": "/app/workspace/coverage/1",
+  "coverage_folder1": "/app/workspace/coverage/2",
+  "temp_folder": "/app/workspace/temp/1",
+  "temp_folder1": "/app/workspace/temp/2",
+  "flag": "--O1",
+  "result_folder": "/app/workspace/result",
+  "json_header_folder": "/app/lib/json/single_include",
+  "snarkjs_folder": "/app/lib/snarkjs"
+}

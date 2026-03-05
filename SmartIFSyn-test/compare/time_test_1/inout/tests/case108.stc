@@ -1,0 +1,13 @@
+//
+//pragma solidity ^0.4.26;
+
+contract canNotDeclassify { // (iii)
+  address public owner; // owner_0 : L
+  function init() public {
+    owner = msg.sender; // owner_1 : H
+  }
+  function kill () public {
+    require(msg.sender == owner); // owner_2 : H
+    selfdestruct(msg.sender); // msg.sender : H
+  }
+}

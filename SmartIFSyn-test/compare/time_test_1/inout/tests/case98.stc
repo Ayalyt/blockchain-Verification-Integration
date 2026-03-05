@@ -1,0 +1,65 @@
+// SPDX-License-Identifier: MIT
+//pragma solidity ~0.4.26;
+
+// Excerpted from the DAPPSCAN dataset (https://github.com/InPlusLab/DAppSCAN).
+// DAppSCAN-source/contracts/Solidity_Finance-OKLG-Smart Contract/contracts-e167d0d742d21bcc62d7a5b770a1f0ed1cf31eca/contracts/OKLGRaffle.sol
+// @vulnerable_at_lines:  58
+
+/**
+ * @title OKLGRaffle
+ * @dev This is the main contract that supports lotteries and raffles.
+ */
+contract OKLGRaffle {
+  struct Raffle {
+    address owner;
+    bool isNft; // rewardToken is either ERC20 or ERC721
+    address rewardToken;
+    uint256 rewardAmountOrTokenId;
+    uint256 start; // timestamp (uint256) of start time (0 if start when raffle is created)
+    uint256 end; // timestamp (uint256) of end time (0 if can be entered until owner draws)
+    address entryToken; // ERC20 token requiring user to send to enter
+    uint256 entryFee; // ERC20 num tokens user must send to enter, or 0 if no entry fee
+    uint256 entryFeesCollected; // amount of fees collected by entries and paid to raffle/lottery owner
+    uint256 maxEntriesPerAddress; // 0 means unlimited entries
+    address[] entries;
+    address winner;
+    bool isComplete;
+    bool isClosed;
+  }
+
+  uint8 public entryFeePercentageCharge = 2;
+
+  mapping(bytes32 => Raffle) public raffles;
+  bytes32[] public raffleIds;
+  mapping(bytes32 => mapping(address => uint256)) public entriesIndexed;
+  Raffle internal _raffle;
+
+  event CreateRaffle(address indexed creator, bytes32 id);
+  event EnterRaffle(
+    bytes32 indexed id,
+    address raffler,
+    uint256 numberOfEntries
+  );
+  event DrawWinner(bytes32 indexed id, address winner, uint256 amount);
+  event CloseRaffle(bytes32 indexed id);
+
+  constructor(address _tokenAddress, address _spendAddress) public
+  {}
+
+
+  function drawWinner(bytes32 _id) external { // @name _id @anno L
+    _raffle = raffles[_id];
+    // SWC-120-Weak Sources of Randomness from Chain Attributes: L58 , L62
+    require(_raffle.end == 0 || block.timestamp > _raffle.end, 'Raffle entry period is not over yet.');
+    require(!_raffle.isComplete, 'Raffle has already been drawn and completed.');
+
+    uint256 _winnerIdx = _random(_raffle.entries.length) % _raffle.entries.length;
+    address _winner = _raffle.entries[_winnerIdx];
+    _raffle.winner = _winner;
+  }
+
+  function _random(uint256 _entries) private view returns (uint256) {
+    return uint256(keccak256(abi.encodePacked(block.difficulty, block.timestamp, _entries)));
+  }
+
+}

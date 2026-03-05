@@ -1,0 +1,87 @@
+// SPDX-License-Identifier: MIT
+// Excerpted from the DAPPSCAN dataset (https://github.com/InPlusLab/DAppSCAN).
+// DAppSCAN-source/contracts/QuillAudits-Dfyn Smart Contract/dual-farm-f44a4dcbeb41f38a9c02cb877a8c95b92685f972/contracts/StakingRewards.sol
+// Vuln: 45
+pragma solidity ~0.4.26;
+
+contract StakingRewards
+{
+
+    /* ========== STATE VARIABLES ========== */
+
+    address public stakingToken;
+    uint256 public periodFinish = 0;
+    uint256 public rewardsDuration = 30 days;
+    uint256 public rewardPerTokenStored;
+    uint256 private _totalSupply;
+    address[] private stakers;
+    address[] public rewardTokens;
+
+    mapping(address => uint256) public rewardsPerTokenMap;
+    mapping(address => uint256) public tokenRewardRate;
+    mapping(address => uint256) private _balances;
+    mapping(address => uint256) public rewardLastUpdatedTime;
+    mapping(address => mapping(address => uint256))
+        public userRewardPerTokenPaid;
+    mapping(address => mapping(address => uint256)) public rewards;
+
+    /* ========== CONSTRUCTOR ========== */
+
+    constructor(
+        address _rewardsDistribution,
+        address[] memory _rewardTokens,
+        address _stakingToken
+    ) public {
+        rewardTokens = _rewardTokens;
+    }
+    function _msgSender() public returns(address) {
+        return msg.sender; // @name msg.sender @anno L
+    }
+
+    /* ========== VIEWS ========== */
+
+    // SWC-120-Weak Sources of Randomness from Chain Attributes: L45
+    function lastTimeRewardApplicable() public view  returns (uint256) {
+        return block.timestamp < periodFinish ? block.timestamp : periodFinish;
+    }
+
+
+
+    /* ========== RESTRICTED FUNCTIONS ========== */
+
+    function notifyRewardAmount(address rewardToken, uint256 reward) external // @name reward @anno L
+    {
+        // SWC-120-Weak Sources of Randomness from Chain Attributes: L58
+        uint256 rewardRate = tokenRewardRate[rewardToken];
+        if (block.timestamp >= periodFinish) {
+            rewardRate = reward / rewardsDuration;
+            periodFinish = block.timestamp + rewardsDuration;
+        } else {
+            uint256 remaining = periodFinish - block.timestamp;
+            uint256 leftover = remaining * rewardRate;
+            rewardRate = (reward + leftover) / (remaining);
+        }
+
+        // Ensure the provided reward amount is not more than the balance in the contract.
+        // This keeps the reward rate in the right range, preventing overflows due to
+        // very high values of rewardRate in the earned and rewardsPerToken functions;
+        // Reward + leftover must be less than 2^256 / 10^18 to avoid overflow.
+        uint256 balance = 0;
+        //
+        require(rewardRate <= balance / (periodFinish - block.timestamp), "Provided reward too high");
+
+        // SWC-120-Weak Sources of Randomness from Chain Attributes: 74,75
+        rewardLastUpdatedTime[rewardToken] = block.timestamp;
+        tokenRewardRate[rewardToken] = rewardRate;
+        emit RewardAdded(reward);
+    }
+
+
+
+    /* ========== EVENTS ========== */
+
+    event RewardAdded(uint256 reward);
+    event Staked(address indexed user, uint256 amount);
+    event Withdrawn(address indexed user, uint256 amount);
+    event RewardPaid(address indexed user, uint256 reward);
+}

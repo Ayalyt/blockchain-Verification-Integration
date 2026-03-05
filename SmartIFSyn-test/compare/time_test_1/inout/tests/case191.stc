@@ -1,0 +1,47 @@
+/**
+ *Submitted for verification at Etherscan.io on 2018-12-04
+*/
+
+//pragma solidity ^0.4.25;
+
+
+contract BonusBank {
+    address payable public owner;
+    uint public limit;
+    modifier isOwner() {
+        require(msg.sender == owner);
+        _;
+    }
+
+
+    event Deposit(address indexed from, uint value);
+
+
+    function limitvalue(uint _limit) public {
+        require(_limit > 0);
+
+        owner = msg.sender;
+        limit = _limit ;
+    }
+
+
+    function deposit() public payable {
+        emit Deposit(msg.sender, msg.value);
+    }
+
+    function canDistribution() public  returns (bool) {
+        return address(this).balance >= limit;
+    }
+
+    function getCurrentBalance() public returns (uint) {
+        return address(this).balance;
+    }
+
+    function distribution() public isOwner {
+        require(canDistribution());
+
+        owner.transfer(address(this).balance);
+    }
+
+
+}

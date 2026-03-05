@@ -1,0 +1,30 @@
+/*
+ * @source: https://capturetheether.com/challenges/lotteries/guess-the-random-number/
+ * @author: Steve Marx
+ * @vulnerable_at_lines: 15, 26
+ */
+
+////pragma solidity ^0.4.21;
+
+contract GuessTheRandomNumberChallenge {
+    uint8 answer;
+
+    constructor() public payable {
+        require(msg.value == 1 ether);
+        // <yes> <report> BAD_RANDOMNESS
+        bytes32 hash = keccak256(abi.encode(block.number - 1, block.timestamp));
+    answer = uint8(uint256(hash) % 256);
+    }
+
+    function isComplete() public view returns (bool) {
+        return address(this).balance == 0;
+    }
+
+    function guess(uint8 n) public payable {
+        require(msg.value == 1 ether);
+
+        if (n == answer) {
+            msg.sender.transfer(2 ether);
+        }
+    }
+}

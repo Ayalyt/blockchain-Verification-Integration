@@ -1,0 +1,112 @@
+tools:
+  - id: compiler_verification
+    name: "1. Circom编译器验证"
+    service_name: "compiler-verification"
+    execution_mode: "run" # 一次性任务，使用 run 模式
+    description: "Circom编译器验证"
+    parameters:
+       - id: test_case
+         prompt: "选择测试用例"
+         type: choice
+         options:
+            - "功能测试" 
+            - "性能测试1"
+            - "性能测试2"
+            - "性能测试3"
+            - "性能测试4"
+            - "性能测试5"
+    volume_mappings:
+      - source: "./Compiler_Verification"
+        target: "/app"
+  
+  - id: compiler_testing
+    name: "2. Circom编译器测试"
+    service_name: "compiler-testing"
+    execution_mode: "exec"
+    description: "Circom编译器测试"
+    parameters:
+      - id: mode
+        prompt: "选择测试模式"
+        type: choice
+        options:
+          - "single - 单版本测试"
+          - "cross - 跨版本测试" 
+          - "replay - 重放测试"
+      - id: version
+        prompt: "选择Circom编译器版本"
+        type: choice
+        options:
+          - "2.1.8"
+          - "2.0.2"
+        condition:
+          mode: ["single", "cross"]
+      - id: version2
+        prompt: "选择第二个Circom编译器版本"
+        type: choice
+        options:
+          - "2.1.8"
+          - "2.0.2"
+        condition:
+          mode: ["cross"]
+      - id: cflags
+        prompt: "选择编译器优化级别"
+        type: choice
+        options:
+          - "--O0"
+          - "--O1"
+          - "--O2"
+        condition:
+          mode: ["single", "cross"]
+      - id: case_name
+        prompt: "选择重放测试用例"
+        type: choice
+        options:
+          - "n1"
+          - "n2"
+          - "n3"
+          - "n4"
+        condition:
+          mode: ["replay"]
+    volume_mappings:
+      - source: "./compiler-testing"
+        target: "/app"
+      - source: "./compiler-testing/workspace"
+        target: "/app/workspace"
+      - source: "./compiler-testing/profraw"
+        target: "/app/profraw"
+      - source: "./compiler-testing/cases"
+        target: "/app/cases"
+
+  - id: cipher_verification
+    name: "3. 密码算法验证"
+    service_name: "cipher-verification"
+    execution_mode: "exec"
+    description: "密码学算法验证，支持MiMC、Poseidon、SHA-256、BabyJub等"
+    parameters: []
+    volume_mappings:
+      - source: "./cipher-verification-for-CIRCOM"
+        target: "/app"
+        
+  - id: smartifsyn_test
+    name: "4. 智能合约信息流分析工具"
+    service_name: "smartifsyn-test"
+    execution_mode: "run"
+    description: "智能合约信息流安全分析"
+    parameters:
+      - id: test_case
+        prompt: "选择测试用例"
+        type: choice
+        options:
+          - "功能测试1（输出结果日志在SmartIFSyn-test/log）"
+          - "功能测试2（输出结果在SmartIFSyn-test/output）" 
+          - "性能测试1（输出结果在SmartIFSyn-test/compare/time_test_i/inout）"
+          - "性能测试2"
+          - "性能测试3"
+          - "性能测试4"
+    volume_mappings:
+      - source: "./SmartIFSyn-test"
+        target: "/app"
+      - source: "./SmartIFSyn-test/log"
+        target: "/app/results/SmartIFSyn-test/log"
+      - source: "./SmartIFSyn-test/output"
+        target: "/app/results/SmartIFSyn-test/output"

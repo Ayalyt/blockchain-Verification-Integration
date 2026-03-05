@@ -1,0 +1,98 @@
+services:
+  orchestrator:
+    build:
+      context: .
+      dockerfile: orchestrator/Dockerfile
+    working_dir: /app
+    volumes:
+      - .:/app
+      - /var/run/docker.sock:/var/run/docker.sock 
+    environment:
+      - HOST_PROJECT_PATH=${PWD}
+      - HTTP_PROXY=${}
+      - HTTPS_PROXY=${}
+      - NO_PROXY=localhost,127.0.0.1,compiler-verification
+    extra_hosts:
+      - "192.168.71.219:host-gateway"
+    stdin_open: true
+    tty: true
+    command: ["python3", "orchestrator/main.py"]
+    depends_on:
+      - compiler-verification
+
+  compiler-verification:
+    image: crpto-integration-compiler-verification
+    build:
+      context: ./Compiler-Verification
+      args:
+        HTTP_PROXY: "${}"
+        HTTPS_PROXY: "${}"
+        NO_PROXY: "localhost,127.0.0.1,orchestrator"
+    volumes:
+      - ${HOST_PROJECT_PATH}/Compiler-Verification:/app/Compiler-Verification
+    environment:
+      - HTTP_PROXY=${}
+      - HTTPS_PROXY=${}
+      - NO_PROXY=localhost,127.0.0.1,orchestrator
+    extra_hosts:
+      - "192.168.71.219:host-gateway"
+    command: ["tail", "-f", "/dev/null"]
+
+  cipher-verification:
+    build:
+      context: ./cipher-verification-for-CIRCOM
+      args:
+        HTTP_PROXY: "${}"
+        HTTPS_PROXY: "${}"
+        NO_PROXY: "localhost,127.0.0.1,orchestrator"
+    volumes:
+      - ${HOST_PROJECT_PATH}/cipher-verification-for-CIRCOM:/app
+    environment:
+      - HTTP_PROXY=${}
+      - HTTPS_PROXY=${}
+      - NO_PROXY=localhost,127.0.0.1,orchestrator
+    extra_hosts:
+      - "192.168.71.219:host-gateway"
+    command: ["tail", "-f", "/dev/null"]
+
+  smartifsyn-test:
+    image: crpto-integration-smartifsyn-test
+    build:
+      context: ./SmartIFSyn-test
+      args:
+        HTTP_PROXY: "${}"
+        HTTPS_PROXY: "${}"
+        NO_PROXY: "localhost,127.0.0.1,orchestrator"
+    volumes:
+      - ${HOST_PROJECT_PATH}/SmartIFSyn-test:/app
+      - ./SmartIFSyn-test/log:/app/results/SmartIFSyn-test/log
+      - ./SmartIFSyn-test/output:/app/results/SmartIFSyn-test/output
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - HTTP_PROXY=${}
+      - HTTPS_PROXY=${}
+      - NO_PROXY=localhost,127.0.0.1,orchestrator
+      - HOST_PROJECT_PATH=${PWD}
+    extra_hosts:
+      - "192.168.71.219:host-gateway"
+    command: ["tail", "-f", "/dev/null"]
+
+  
+  compiler-testing:
+    build:
+      context: ./compiler-testing
+      args:
+        RUST_TOOLCHAIN: "nightly-2025-05-30"
+        HTTP_PROXY: "${}"
+        HTTPS_PROXY: "${}"
+        NO_PROXY: "localhost,127.0.0.1,orchestrator"
+    volumes:
+      - ${HOST_PROJECT_PATH}/compiler-testing:/app
+    environment:
+      - HTTP_PROXY=${}
+      - HTTPS_PROXY=${}
+      - NO_PROXY=localhost,127.0.0.1,orchestrator
+      - HOST_PROJECT_PATH=${PWD}
+    extra_hosts:
+      - "192.168.71.219:host-gateway"
+    command: ["tail", "-f", "/dev/null"]

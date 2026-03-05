@@ -1,0 +1,16 @@
+/Test_CASES/
+/Verify_CASES/
+/RAW/Verifier/temp_file/
+# Python bytecode files
+__pycache__/
+*.pyc
+RAW/Verifier/Model/CircomSourceCode/__pycache__/__init__.cpython-310.pyc
+RAW/Verifier/Model/CircomSourceCode/__pycache__/BuildinWords.cpython-310.pyc
+RAW/Verifier/Model/CircomSourceCode/__pycache__/Interfaces.cpython-310.pyc
+RAW/Verifier/Model/CircomSourceCode/__pycache__/Signal.cpython-310.pyc
+RAW/Verifier/Model/CPPWitnessCalculator/__pycache__/ComponentMemory.cpython-310.pyc
+RAW/Verifier/Model/CPPWitnessCalculator/__pycache__/CPPModeler.cpython-310.pyc
+RAW/Verifier/Model/CPPWitnessCalculator/__pycache__/Interpreter.cpython-310.pyc
+RAW/Verifier/Model/CPPWitnessCalculator/__pycache__/ModelingState.cpython-310.pyc
+RAW/Verifier/Tools/__pycache__/ExpandedCVC5.cpython-310.pyc
+RAW/Verifier/Tools/__pycache__/Check.cpython-310.pyc
